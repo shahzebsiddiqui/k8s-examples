@@ -1,3 +1,4 @@
+# configmap.yaml (modified - replace your existing prometheus-config ConfigMap)
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -7,6 +8,7 @@ data:
   prometheus.yml: |
     global:
       scrape_interval: 15s
+
     scrape_configs:
       - job_name: 'prometheus'
         static_configs:
@@ -29,3 +31,6 @@ data:
           - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name]
             action: keep
             regex: default;kubernetes
+
+    remote_write:
+      - url: http://vmsingle.monitoring.svc.cluster.local:8428/api/v1/write

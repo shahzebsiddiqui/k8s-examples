@@ -1,0 +1,44 @@
+# deployment-vmsingle.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vmsingle
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vmsingle
+  template:
+    metadata:
+      labels:
+        app: vmsingle
+    spec:
+      containers:
+        - name: victoriametrics
+          image: victoriametrics/victoria-metrics:v1.102.0  # or :latest
+          args:
+            - "--storageDataPath=/victoriametrics-data"
+            - "--retentionPeriod=6m"  # e.g., 6 months - adjust as needed
+            - "--httpListenAddr=:8428"
+          ports:
+            - containerPort: 8428
+          volumeMounts:
+            - name: data
+              mountPath: /victoriametrics-data
+            - name: config
+              mountPath: /etc/vm
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "4Gi"
+              cpu: "2"
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: vm-pvc  # or prometheus-pvc if reusing
+        - name: config
+          configMap:
+            name: vm-config

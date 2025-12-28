@@ -1,0 +1,12 @@
+# pvc-vm.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: vm-pvc
+  namespace: monitoring
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi  # VM compresses ~7-10x better than Prometheus
