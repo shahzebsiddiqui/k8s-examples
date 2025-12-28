@@ -19,7 +19,7 @@ spec:
           image: victoriametrics/victoria-metrics:v1.102.0  # or :latest
           args:
             - "--storageDataPath=/victoriametrics-data"
-            - "--retentionPeriod=6m"  # e.g., 6 months - adjust as needed
+            - "--retentionPeriod=1"  # e.g., 6 months - adjust as needed
             - "--httpListenAddr=:8428"
           ports:
             - containerPort: 8428
