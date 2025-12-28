@@ -11,3 +11,5 @@ spec:
     - protocol: TCP
       port: 8428
       targetPort: 8428
+      nodePort: 30428
+  type: NodePort
