@@ -27,6 +27,9 @@ sysctl --system
 echo "Installing conntrack-tools..."
 dnf install -y conntrack-tools
 
+dnf install -y dnf-plugins-core
+dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+
 echo "Installing containerd..."
 dnf install -y containerd.io
 
