@@ -1,4 +1,6 @@
 #!/bin/bash
 dnf install -y 
   git \
-  htop
+  htop \
+  bash-completion
+  
