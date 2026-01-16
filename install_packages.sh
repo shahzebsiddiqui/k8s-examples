@@ -1,6 +1,6 @@
 #!/bin/bash
-dnf install -y 
+dnf install -y \
   git \
-  htop \
-  bash-completion
+  bash-completion \
+  net-tools
   
