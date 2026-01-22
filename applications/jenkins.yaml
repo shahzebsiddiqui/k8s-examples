@@ -1,0 +1,47 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: jenkins
+  namespace: argocd               # ← Argo CD namespace
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default                # or your own Argo CD project
+
+  source:
+    repoURL: https://charts.jenkins.io
+    chart: jenkins
+    targetRevision: 5.8.122       # ← check latest at https://artifacthub.io/packages/helm/jenkinsci/jenkins
+
+    helm:
+      releaseName: jenkins        # optional, defaults to app name
+
+      # Highest priority overrides (like --set)
+      parameters:
+        - name: controller.serviceType
+          value: LoadBalancer     # or NodePort/ClusterIP
+        - name: controller.ingress.enabled
+          value: "false"          # we'll enable below via valuesObject or values file
+
+      # Embedded structured values (good for small changes)
+      valuesObject:
+        controller:
+          admin:
+            # Important: set a known password or use existingSecret
+            password: changeme123   # ← CHANGE THIS or use secret management!
+          servicePort: 8080
+
+      # OR (better for complex config): reference a values file from same repo
+      valueFiles:
+        - values/jenkins/values-prod.yaml   # relative to repo root
+
+  destination:
+    server: https://kubernetes.default.svc  # in-cluster
+    namespace: jenkins                      # will be created if missing
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true              # auto-create ns if not exists

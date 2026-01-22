@@ -1,0 +1,38 @@
+controller:
+  # Security first — never commit real passwords!
+  # Better: use Sealed Secrets, External Secrets, or parameter + secretRef
+  admin:
+    existingSecret: jenkins-admin-secret   # create this secret separately
+    userName: admin
+    # password: ""  # pulled from secret
+
+  serviceType: LoadBalancer
+
+  ingress:
+    enabled: true
+    ingressClassName: nginx               # change to your ingress class
+    hosts:
+      - host: jenkins.yourcompany.com
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - hosts:
+          - jenkins.yourcompany.com
+        secretName: jenkins-tls-secret      # create cert secret
+
+  # Persistence (recommended for prod)
+  persistence:
+    enabled: true
+    storageClass: "standard"              # or longhorn, ebs, etc.
+    size: 20Gi
+
+  # Agent config (if using Kubernetes agents)
+  agent:
+    enabled: true
+    kubernetes:
+      enabled: true
+
+  # Disable JCasC if you don't need it, or configure it
+  JCasC:
+    defaultConfig: true
