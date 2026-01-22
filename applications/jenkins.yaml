@@ -13,10 +13,10 @@ spec:
       values: |
         controller:
           serviceType: LoadBalancer
-          servicePort: 8081
+          servicePort: 8080
         persistence:
           enabled: true
-          size: 10Gi
+          size: 8Gi
           # storageClass: "standard"   # ← set if needed (leave empty to use cluster default)
 
   destination:
