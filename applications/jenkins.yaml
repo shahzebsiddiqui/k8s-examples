@@ -2,27 +2,29 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: jenkins
-  namespace: argocd          # ← Argo CD usually lives in argocd namespace
+  namespace: argocd
 spec:
   project: default
-
   source:
     repoURL: https://charts.jenkins.io
     chart: jenkins
-    targetRevision: 5.x.x     # or "*" / "latest" / a fixed version like "5.0.0"
-
-    # Intentionally empty → no customization, pure defaults
+    targetRevision: 5.x.x          # or a fixed version like 5.0.0 or *
     helm:
-      # You can optionally add releaseName if you want something other than "jenkins"
-      # releaseName: my-jenkins
+      values: |
+        controller:
+          serviceType: LoadBalancer
+          servicePort: 8081
+        persistence:
+          enabled: true
+          size: 10Gi
+          # storageClass: "standard"   # ← set if needed (leave empty to use cluster default)
 
   destination:
     server: https://kubernetes.default.svc
-    namespace: jenkins        # will be created if missing
-
+    namespace: jenkins
   syncPolicy:
-    automated:                # optional – comment out if you want manual syncs
+    automated:
       prune: true
       selfHeal: true
     syncOptions:
-      - CreateNamespace=true  # auto-create namespace if missing
+      - CreateNamespace=true
