@@ -1,0 +1,33 @@
+# production path
+export LMOD_CONFIG_DIRECTORY=/software/lmod_config
+
+if [ -n "$MODULEFILES_DIR" ]; then
+ 	export LMOD_CONFIG_DIRECTORY="$MODULEFILES_DIR/lmod_config"
+fi
+
+export LMOD_CASE_INDEPENDENT_SORTING=yes
+
+# Currently not using unique modules for each cluster on shared filesystem. If we decide to go this route, we can enable this option
+# export LMOD_SYSTEM_NAME=$(grep 'ClusterName=' /etc/slurm/slurm.conf | sed 's/ClusterName=//')
+
+# Define the path to the slurm.conf file
+SLURM_CONF_FILE="/etc/slurm/slurm.conf"
+
+# Check if the file exists and is a regular file
+if [ -f "$SLURM_CONF_FILE" ]; then
+    # If the file exists, run the grep and sed command
+    export LMOD_SYSHOST=$(grep 'ClusterName=' "$SLURM_CONF_FILE" | sed 's/ClusterName=//')
+else
+    # If the file does not exist, set the variable to 'txt'
+    export LMOD_SYSHOST='fsl'
+fi
+
+export LMOD_MODULERC=$LMOD_CONFIG_DIRECTORY/modulerc.lua
+
+export LMOD_ADMIN_FILE=$LMOD_CONFIG_DIRECTORY/admin.list
+
+export LMOD_AVAIL_STYLE="grouped:system"
+
+export LMOD_RC=$LMOD_CONFIG_DIRECTORY/lmodrc.lua
+
+export LMOD_PACKAGE_PATH=$LMOD_CONFIG_DIRECTORY
