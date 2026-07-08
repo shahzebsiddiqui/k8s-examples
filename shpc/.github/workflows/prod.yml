@@ -1,0 +1,46 @@
+name: Production Spack Deployment
+
+on:
+  workflow_dispatch:
+
+jobs:
+  spack_production_deployment:
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [dev-camber, prod-camber]  
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python virtual environment
+        run: |
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install clingo
+          echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> $GITHUB_ENV
+
+      - name: Build Spack Stack
+        run: |
+          deployment_path=/camber/home/tools/spack-deployments/v1.0.0
+          mkdir -p $deployment_path
+          SPACK_DIR="spack_$(date +%Y%m%d_%H%M%S)"
+          cd $deployment_path
+          git clone -b v1.0.0 https://github.com/spack/spack.git $SPACK_DIR
+          source $SPACK_DIR/share/spack/setup-env.sh
+          export SPACK_PYTHON=$(which python3)
+          mkdir -p $SPACK_ROOT/etc/spack
+          cd $GITHUB_WORKSPACE
+          cp -r settings/* $SPACK_ROOT/etc/spack/
+          spack env create apps spack-configs/apps-prod.yaml
+          spack env activate apps
+          spack env st
+          spack config blame
+          spack concretize -f
+          spack install -p 8 -j 8 --show-log-on-error 
+          spack module tcl refresh -y --delete-tree          
+          spack clean -a
+          cd $deployment_path
+          unlink default
+          ln -s $SPACK_DIR default

@@ -1,0 +1,24 @@
+name: Install SHPC containers
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'shpc/install_containers.sh'
+
+jobs:
+  install_containers:
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [dev-camber, prod-camber]  
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Containers
+        run: |
+          bash shpc/install_containers.sh
+
