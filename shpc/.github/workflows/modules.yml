@@ -1,0 +1,44 @@
+name: Sync modules to cluster
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'modules/**'
+      - '.github/workflows/modules.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'modules/**'
+      - '.github/workflows/modules.yml'
+
+jobs:
+  sync_modules:
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [dev-camber, prod-camber]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set rsync destination
+        id: set_destination
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "mdir=$GITHUB_WORKSPACE/camber/home/tools/modules" >> $GITHUB_OUTPUT
+          else
+            echo "mdir=/camber/home/tools/modules" >> $GITHUB_OUTPUT
+          fi
+
+      - name: rsync modules
+        run: |
+          source /etc/profile
+          mdir=${{ steps.set_destination.outputs.mdir }}
+          mkdir -p $mdir
+          rsync -av --delete modules/ $mdir
+          module use $mdir
+          module avail

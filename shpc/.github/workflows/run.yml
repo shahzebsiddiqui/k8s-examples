@@ -1,0 +1,47 @@
+name: Spack Environment Setup
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'spack-configs/**'
+      - '.github/workflows/run.yml'
+  workflow_dispatch:
+
+jobs:
+  setup-spack-env:
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ dev-camber, prod-camber ]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python virtual environment
+        run: |
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install clingo
+          echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> $GITHUB_ENV
+
+      - name: Build Spack Stack
+        run: |
+          git clone -b v1.0.0 https://github.com/spack/spack.git $GITHUB_WORKSPACE/spack
+          source $GITHUB_WORKSPACE/spack/share/spack/setup-env.sh
+          export SPACK_PYTHON=$(which python3)
+          echo $MY_OCI_TOKEN
+          mkdir -p $SPACK_ROOT/etc/spack
+          cp -r settings/* $SPACK_ROOT/etc/spack/
+          spack env create apps spack-configs/apps.yaml
+          spack env activate apps
+          spack config blame
+          spack env st
+          spack concretize -f
+          spack install -p 8 -j 8 --show-log-on-error
+          spack buildcache update-index camber-spack-v1.0.0-cache
+          spack buildcache list -Lv -a
+          spack clean -a
+
